@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VoyageAI - Autonomous AI Travel Planner powered by LangChain and Groq. Generate personalized day-by-day travel itineraries with local insights and budget breakdowns.">
+  <meta name="keywords" content="AI travel agent, trip planner, travel itinerary generator, vacation planner, AI travel assistant">
+  <title>VoyageAI — Intelligent AI Travel Concierge & Trip Planner</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%200%22%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
+</head>
+<body>
+  <!-- Ambient Glow Backgrounds -->
+  <div class="ambient-glow glow-1" aria-hidden="true"></div>
+  <div class="ambient-glow glow-2" aria-hidden="true"></div>
+
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon-wrapper">
+          <span class="brand-icon">✈️</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Voyage<span class="accent-text">AI</span></span>
+          <span class="brand-badge">Next-Gen Travel Planner</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-indicator" title="AI Agent Engine Status">
+          <span class="pulse-dot"></span>
+          <span class="status-label">Groq AI Active</span>
+        </div>
+
+        <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Light and Dark Mode" title="Toggle Theme">
+          <span class="theme-icon light-icon">☀️</span>
+          <span class="theme-icon dark-icon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <div class="hero-badge">
+        <span class="sparkle-icon">✨</span> Autonomous AI Itinerary Architect
+      </div>
+      <h1 class="hero-title">
+        Plan Your Next Journey With <span class="gradient-text">Precision Intelligence</span>
+      </h1>
+      <p class="hero-subtitle">
+        Curating personalized day-wise schedules, hidden culinary spots, local transit hacks, and verified budget estimates in seconds.
+      </p>
+
+      <div class="hero-features-bar">
+        <div class="hero-feature-item">
+          <span class="feature-icon">⚡</span>
+          <span>Instant Turnaround</span>
+        </div>
+        <div class="hero-feature-divider"></div>
+        <div class="hero-feature-item">
+          <span class="feature-icon">🌐</span>
+          <span>Google Serper Grounding</span>
+        </div>
+        <div class="hero-feature-divider"></div>
+        <div class="hero-feature-item">
+          <span class="feature-icon">💎</span>
+          <span>Bespoke Budget & Route Tuning</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Layout -->
+  <main class="main-content">
+    <div class="content-grid">
+      
+      <!-- LEFT COLUMN: Trip Planner Form -->
+      <section class="planner-card glass-panel" aria-labelledby="formHeading">
+        <div class="card-header">
+          <div class="card-header-icon">🌍</div>
+          <div>
+            <h2 id="formHeading" class="card-title">Craft Your Trip</h2>
+            <p class="card-subtitle">Set your preferences and let our AI agent build your schedule</p>
+          </div>
+        </div>
+
+        <form id="travelForm" class="travel-form" novalidate>
+          
+          <!-- Destination Field -->
+          <div class="form-group">
+            <label for="destinationInput" class="form-label">
+              <span>Destination City or Country</span>
+              <span class="required-badge">*</span>
+            </label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon">📍</span>
+              <input 
+                type="text" 
+                id="destinationInput" 
+                name="destination" 
+                class="form-control" 
+                placeholder="e.g. Kyoto, Japan or Amalfi Coast, Italy" 
+                required 
+                autocomplete="off"
+              >
+              <button type="button" id="clearDestBtn" class="clear-btn" aria-label="Clear destination" title="Clear">✕</button>
+            </div>
+            <div class="quick-destination-pills">
+              <span class="pills-label">Quick Ideas:</span>
+              <button type="button" class="quick-pill" data-dest="Switzerland">Switzerland</button>
+              <button type="button" class="quick-pill" data-dest="Maldives">Maldives</button>
+              <button type="button" class="quick-pill" data-dest="Paris">Paris</button>
+              <button type="button" class="quick-pill" data-dest="Kyoto, Japan">Kyoto</button>
+              <button type="button" class="quick-pill" data-dest="Dubai">Dubai</button>
+            </div>
+          </div>
+
+          <!-- Trip Duration Slider -->
+          <div class="form-group">
+            <div class="slider-header">
+              <label for="durationSlider" class="form-label">Trip Duration</label>
+              <div class="slider-value-badge">
+                <span id="durationValue">5</span> Days
+                <span id="tripTempoBadge" class="tempo-badge">Medium Trip</span>
+              </div>
+            </div>
+            <div class="range-slider-wrapper">
+              <input 
+                type="range" 
+                id="durationSlider" 
+                name="days" 
+                min="1" 
+                max="30" 
+                value="5" 
+                class="custom-range"
+              >
+              <div class="range-markers">
+                <span>1 Day</span>
+                <span>7 Days</span>
+                <span>14 Days</span>
+                <span>21 Days</span>
+                <span>30 Days</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Number of Travelers -->
+          <div class="form-group">
+            <label for="travelersInput" class="form-label">Number of Travelers</label>
+            <div class="stepper-wrapper">
+              <button type="button" id="decrementTravelers" class="stepper-btn" aria-label="Decrease travelers">−</button>
+              <div class="stepper-display">
+                <input 
+                  type="number" 
+                  id="travelersInput" 
+                  name="travelers" 
+                  min="1" 
+                  max="20" 
+                  value="2" 
+                  class="stepper-input"
+                  readonly
+                >
+                <span id="travelerTypeTag" class="traveler-tag">Couple / Pair (2)</span>
+              </div>
+              <button type="button" id="incrementTravelers" class="stepper-btn" aria-label="Increase travelers">+</button>
+            </div>
+          </div>
+
+          <!-- Budget Tier Selection -->
+          <div class="form-group">
+            <label class="form-label">Budget Level</label>
+            <div class="budget-options-grid">
+              <label class="budget-option-card">
+                <input type="radio" name="budget" value="Budget" class="budget-radio">
+                <div class="budget-card-content">
+                  <span class="budget-emoji">🎒</span>
+                  <span class="budget-title">Budget</span>
+                  <span class="budget-desc">Hostels, local transit & budget eats</span>
+                </div>
+              </label>
+
+              <label class="budget-option-card selected">
+                <input type="radio" name="budget" value="Standard" class="budget-radio" checked>
+                <div class="budget-card-content">
+                  <span class="budget-emoji">🧳</span>
+                  <span class="budget-title">Standard</span>
+                  <span class="budget-desc">Comfortable hotels & balanced dining</span>
+                </div>
+              </label>
+
+              <label class="budget-option-card">
+                <input type="radio" name="budget" value="Luxury" class="budget-radio">
+                <div class="budget-card-content">
+                  <span class="budget-emoji">👑</span>
+                  <span class="budget-title">Luxury</span>
+                  <span class="budget-desc">5-star resorts, private transfers & fine dining</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Transport & Hotel Selectors (2 Col Row) -->
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="transportSelect" class="form-label">Preferred Transport</label>
+              <div class="select-wrapper">
+                <select id="transportSelect" name="transport" class="form-select">
+                  <option value="Flight" selected>✈️ Flight</option>
+                  <option value="Train">🚆 Scenic Train / Rail</option>
+                  <option value="Bus">🚌 Express Coach / Bus</option>
+                  <option value="Car">🚗 Rental Car / Roadtrip</option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="hotelSelect" class="form-label">Hotel Category</label>
+              <div class="select-wrapper">
+                <select id="hotelSelect" name="hotel" class="form-select">
+                  <option value="3 Star">⭐⭐⭐ 3 Star (Boutique / Cozy)</option>
+                  <option value="4 Star" selected>⭐⭐⭐⭐ 4 Star (Premium Comfort)</option>
+                  <option value="5 Star">⭐⭐⭐⭐⭐ 5 Star (Luxury & Resort)</option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Interests (Multi-Select Chips) -->
+          <div class="form-group">
+            <div class="interests-header">
+              <label class="form-label">Travel Interests & Style</label>
+              <span class="interests-hint">Select all that inspire you</span>
+            </div>
+            <div class="interest-chips-container" id="interestChipsContainer">
+              <button type="button" class="interest-chip active" data-interest="Adventure">
+                <span class="chip-icon">🧗</span> Adventure
+              </button>
+              <button type="button" class="interest-chip active" data-interest="Nature">
+                <span class="chip-icon">🌿</span> Nature
+              </button>
+              <button type="button" class="interest-chip active" data-interest="Food">
+                <span class="chip-icon">🍜</span> Food & Wine
+              </button>
+              <button type="button" class="interest-chip" data-interest="Shopping">
+                <span class="chip-icon">🛍️</span> Shopping
+              </button>
+              <button type="button" class="interest-chip" data-interest="History">
+                <span class="chip-icon">🏛️</span> History & Culture
+              </button>
+              <button type="button" class="interest-chip" data-interest="Nightlife">
+                <span class="chip-icon">🍸</span> Nightlife
+              </button>
+              <button type="button" class="interest-chip" data-interest="Beaches">
+                <span class="chip-icon">🏖️</span> Beaches & Sun
+              </button>
+              <button type="button" class="interest-chip" data-interest="Photography">
+                <span class="chip-icon">📸</span> Photography
+              </button>
+              <button type="button" class="interest-chip" data-interest="Wellness">
+                <span class="chip-icon">🧘</span> Wellness & Spa
+              </button>
+            </div>
+          </div>
+
+          <!-- Optional Custom Notes / Requests -->
+          <div class="form-group">
+            <label for="customNotes" class="form-label">
+              <span>Specific Requests or Dietary Preferences</span>
+              <span class="optional-tag">(Optional)</span>
+            </label>
+            <textarea 
+              id="customNotes" 
+              name="notes" 
+              class="form-textarea" 
+              rows="2" 
+              placeholder="e.g. Vegetarian food preferences, traveling with kids, interested in scenic photography spots..."
+            ></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="submitBtn" class="btn-primary-glow">
+            <span class="btn-glow-effect"></span>
+            <span class="btn-content">
+              <span class="btn-icon">🚀</span>
+              <span class="btn-text">Generate AI Travel Plan</span>
+            </span>
+          </button>
+        </form>
+      </section>
+
+      <!-- RIGHT COLUMN: Output & Exploration Hub -->
+      <section class="results-column">
+        
+        <!-- Popular Destinations Carousel/Grid (Shown before or alongside) -->
+        <div class="popular-destinations-card glass-panel" id="popularDestinationsCard">
+          <div class="section-title-row">
+            <div class="section-title-left">
+              <span class="section-emoji">🌎</span>
+              <div>
+                <h3 class="section-heading">Featured Destinations</h3>
+                <p class="section-subtext">Click any destination to auto-configure your itinerary</p>
+              </div>
+            </div>
+          </div>
+          <div class="destinations-pills-grid" id="destinationsGrid">
+            <!-- Dynamically populated via app.js -->
+          </div>
+        </div>
+
+        <!-- Pro Travel Tips Box -->
+        <div class="travel-tips-card glass-panel" id="travelTipsCard">
+          <div class="tips-header">
+            <span class="tips-icon">💡</span>
+            <h3 class="tips-title">Smart Traveler Wisdom</h3>
+          </div>
+          <ul class="tips-list">
+            <li>
+              <span class="tip-check">✔</span>
+              <span><strong>Book Flights 6-8 Weeks Ahead:</strong> Mid-week departures (Tues/Wed) offer optimal rates.</span>
+            </li>
+            <li>
+              <span class="tip-check">✔</span>
+              <span><strong>Backup Important Docs:</strong> Save digital copies of passports & insurance offline.</span>
+            </li>
+            <li>
+              <span class="tip-check">✔</span>
+              <span><strong>Carry Local Emergency Cash:</strong> Keep small denomination banknotes for local transport & street markets.</span>
+            </li>
+            <li>
+              <span class="tip-check">✔</span>
+              <span><strong>Comprehensive Travel Insurance:</strong> Ensure medical and baggage protection before departure.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Dynamic Results Panel -->
+        <div class="itinerary-display-card glass-panel" id="itineraryDisplayCard">
+          
+          <!-- Empty State -->
+          <div id="emptyState" class="state-container empty-state">
+            <div class="empty-graphic-wrapper">
+              <img src="/static/hero_banner.jpg" alt="VoyageAI Destinations" class="preview-hero-img">
+              <div class="empty-badge-overlay">
+                <span>🧭 Ready to explore?</span>
+              </div>
+            </div>
+            <h3 class="empty-title">Your Custom Itinerary Awaits</h3>
+            <p class="empty-desc">
+              Fill out the trip details on the left, or select one of the popular destinations above. Our AI agent will research and construct a comprehensive itinerary for you.
+            </p>
+          </div>
+
+          <!-- Loading State with Step Simulation -->
+          <div id="loadingState" class="state-container loading-state" style="display: none;">
+            <div class="loader-compass-wrapper">
+              <div class="compass-ring"></div>
+              <div class="compass-needle">✈️</div>
+            </div>
+            <h3 class="loading-title">Architecting Your Journey</h3>
+            <p class="loading-subtitle" id="loadingStatusText">Consulting Groq LLM & searching live travel data...</p>
+
+            <div class="loading-progress-bar-container">
+              <div id="loadingProgressBar" class="loading-progress-bar"></div>
+            </div>
+
+            <div class="loading-steps-list">
+              <div class="step-item active" id="step1">
+                <span class="step-indicator"></span>
+                <span>Connecting to Groq AI Planner</span>
+              </div>
+              <div class="step-item" id="step2">
+                <span class="step-indicator"></span>
+                <span>Searching local attractions with Google Serper</span>
+              </div>
+              <div class="step-item" id="step3">
+                <span class="step-indicator"></span>
+                <span>Curating day-by-day morning, afternoon & evening schedule</span>
+              </div>
+              <div class="step-item" id="step4">
+                <span class="step-indicator"></span>
+                <span>Structuring transit options, hotel picks & budget calculation</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Success / Itinerary Rendered State -->
+          <div id="resultState" class="state-container result-state" style="display: none;">
+            <!-- Itinerary Header Summary -->
+            <div class="itinerary-summary-header">
+              <div class="summary-meta-left">
+                <span class="summary-badge" id="metaDestBadge">📍 Switzerland</span>
+                <span class="summary-badge" id="metaDurationBadge">⏱️ 5 Days</span>
+                <span class="summary-badge" id="metaTravelersBadge">👥 2 Travelers</span>
+                <span class="summary-badge" id="metaBudgetBadge">💎 Standard</span>
+              </div>
+              
+              <!-- Quick Action Bar -->
+              <div class="itinerary-actions">
+                <button type="button" id="copyBtn" class="action-btn" title="Copy markdown itinerary">
+                  <span>📋</span> Copy
+                </button>
+                <button type="button" id="downloadBtn" class="action-btn" title="Download as Markdown file">
+                  <span>💾</span> Save .md
+                </button>
+                <button type="button" id="printBtn" class="action-btn" title="Print itinerary or save to PDF">
+                  <span>🖨️</span> Print / PDF
+                </button>
+                <button type="button" id="planAnotherBtn" class="action-btn action-btn-accent" title="Plan another destination">
+                  <span>✨</span> New Trip
+                </button>
+              </div>
+            </div>
+
+            <!-- Formatted Markdown Content Container -->
+            <div id="itineraryContent" class="itinerary-content">
+              <!-- Injected dynamically by app.js -->
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div id="errorState" class="state-container error-state" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h3 class="error-title">Unable to Generate Itinerary</h3>
+            <p class="error-desc" id="errorMessageText">An unexpected error occurred while communicating with the AI service.</p>
+            <button type="button" id="retryBtn" class="btn-secondary">Try Again</button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span>© 2026 VoyageAI. Built with modern Vanilla JS, CSS3, and FastAPI.</span>
+      </div>
+      <div class="footer-right">
+        <span class="tech-tag">⚡ FastAPI</span>
+        <span class="tech-tag">🧠 LangChain</span>
+        <span class="tech-tag">🚀 Groq LLM</span>
+        <span class="tech-tag">🔍 Google Serper</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="alert" aria-live="polite">
+    <span id="toastIcon" class="toast-icon">✓</span>
+    <span id="toastMessage" class="toast-message">Action completed</span>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
