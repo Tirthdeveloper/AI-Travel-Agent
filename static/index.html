@@ -293,8 +293,8 @@
           <button type="submit" id="submitBtn" class="btn-primary-glow">
             <span class="btn-glow-effect"></span>
             <span class="btn-content">
-              <span class="btn-icon">🚀</span>
-              <span class="btn-text">Generate AI Travel Plan</span>
+              <span class="btn-icon" id="submitBtnIcon">🚀</span>
+              <span class="btn-text" id="submitBtnText">Generate AI Travel Plan</span>
             </span>
           </button>
         </form>
@@ -347,6 +347,7 @@
 
         <!-- Dynamic Results Panel -->
         <div class="itinerary-display-card glass-panel" id="itineraryDisplayCard">
+          <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
           
           <!-- Empty State -->
           <div id="emptyState" class="state-container empty-state">
@@ -362,12 +363,31 @@
             </p>
           </div>
 
-          <!-- Loading State with Step Simulation -->
+          <!-- Loading State with Flight Radar & Live Travel Ticker -->
           <div id="loadingState" class="state-container loading-state" style="display: none;">
-            <div class="loader-compass-wrapper">
-              <div class="compass-ring"></div>
-              <div class="compass-needle">✈️</div>
+            
+            <!-- Flight Route Radar Animation -->
+            <div class="flight-radar-box">
+              <div class="radar-header">
+                <span class="radar-tag">AI CONCIERGE AT WORK</span>
+                <span class="radar-percent" id="radarPercent">0%</span>
+              </div>
+              <div class="flight-trajectory-line">
+                <div class="flight-waypoint start-point">
+                  <span class="waypoint-dot"></span>
+                  <span class="waypoint-label">Your Origin</span>
+                </div>
+                <div class="flight-track">
+                  <div class="flight-track-fill" id="flightTrackFill"></div>
+                  <span class="flight-plane-icon" id="flightPlaneIcon">✈️</span>
+                </div>
+                <div class="flight-waypoint end-point">
+                  <span class="waypoint-dot pulse"></span>
+                  <span class="waypoint-label" id="flightDestWaypoint">Destination</span>
+                </div>
+              </div>
             </div>
+
             <h3 class="loading-title">Architecting Your Journey</h3>
             <p class="loading-subtitle" id="loadingStatusText">Consulting Groq LLM & searching live travel data...</p>
 
@@ -375,37 +395,74 @@
               <div id="loadingProgressBar" class="loading-progress-bar"></div>
             </div>
 
+            <!-- Dynamic Live Travel Fact & Search Ticker -->
+            <div class="live-travel-fact-card">
+              <div class="fact-icon">✨</div>
+              <div class="fact-content">
+                <span class="fact-title">Live AI Search Intelligence</span>
+                <p class="fact-text" id="liveFactText">Scanning local attraction tickets, metro maps, and dining spots...</p>
+              </div>
+            </div>
+
+            <!-- Steps list -->
             <div class="loading-steps-list">
               <div class="step-item active" id="step1">
                 <span class="step-indicator"></span>
-                <span>Connecting to Groq AI Planner</span>
+                <span>Connecting to Groq AI & Google Serper</span>
               </div>
               <div class="step-item" id="step2">
                 <span class="step-indicator"></span>
-                <span>Searching local attractions with Google Serper</span>
+                <span>Gathering weather, transit passes & top rated attractions</span>
               </div>
               <div class="step-item" id="step3">
                 <span class="step-indicator"></span>
-                <span>Curating day-by-day morning, afternoon & evening schedule</span>
+                <span>Assembling Morning, Afternoon & Evening schedules</span>
               </div>
               <div class="step-item" id="step4">
                 <span class="step-indicator"></span>
-                <span>Structuring transit options, hotel picks & budget calculation</span>
+                <span>Finalizing hotel recommendations & budget breakdown</span>
               </div>
             </div>
+
+            <!-- Translucent Skeleton Wireframe Preview -->
+            <div class="skeleton-preview-box">
+              <div class="skeleton-line title-skeleton"></div>
+              <div class="skeleton-cards-grid">
+                <div class="skeleton-card">
+                  <div class="skeleton-badge"></div>
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line short"></div>
+                </div>
+                <div class="skeleton-card">
+                  <div class="skeleton-badge"></div>
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line short"></div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           <!-- Success / Itinerary Rendered State -->
           <div id="resultState" class="state-container result-state" style="display: none;">
-            <!-- Itinerary Header Summary -->
-            <div class="itinerary-summary-header">
+            
+            <!-- Hero Destination Showcase Header -->
+            <div class="itinerary-hero-showcase">
+              <div class="showcase-glow"></div>
+              <div class="showcase-top">
+                <div class="showcase-badge">✨ AI Tailored Masterpiece</div>
+                <h2 class="showcase-destination-title" id="showcaseDestTitle">Your Custom Itinerary</h2>
+              </div>
+              
               <div class="summary-meta-left">
-                <span class="summary-badge" id="metaDestBadge">📍 Switzerland</span>
+                <span class="summary-badge" id="metaDestBadge">📍 Destination</span>
                 <span class="summary-badge" id="metaDurationBadge">⏱️ 5 Days</span>
                 <span class="summary-badge" id="metaTravelersBadge">👥 2 Travelers</span>
                 <span class="summary-badge" id="metaBudgetBadge">💎 Standard</span>
+                <span class="summary-badge" id="metaTransportBadge">✈️ Flight</span>
+                <span class="summary-badge" id="metaHotelBadge">⭐⭐⭐⭐ 4 Star</span>
               </div>
-              
+
               <!-- Quick Action Bar -->
               <div class="itinerary-actions">
                 <button type="button" id="copyBtn" class="action-btn" title="Copy markdown itinerary">
@@ -417,13 +474,38 @@
                 <button type="button" id="printBtn" class="action-btn" title="Print itinerary or save to PDF">
                   <span>🖨️</span> Print / PDF
                 </button>
+                <a id="mapsBtn" class="action-btn" target="_blank" rel="noopener noreferrer" title="View destination on Google Maps">
+                  <span>🗺️</span> Google Maps
+                </a>
                 <button type="button" id="planAnotherBtn" class="action-btn action-btn-accent" title="Plan another destination">
-                  <span>✨</span> New Trip
+                  <span>🔄</span> Edit / New Trip
                 </button>
               </div>
             </div>
 
-            <!-- Formatted Markdown Content Container -->
+            <!-- Interactive Tab Bar -->
+            <div class="itinerary-tabs-bar" id="itineraryTabsBar">
+              <button type="button" class="tab-btn active" data-tab="all">
+                <span>🌟</span> Complete Plan
+              </button>
+              <button type="button" class="tab-btn" data-tab="daily">
+                <span>📅</span> Day-by-Day
+              </button>
+              <button type="button" class="tab-btn" data-tab="hotels">
+                <span>🏨</span> Stays & Hotels
+              </button>
+              <button type="button" class="tab-btn" data-tab="food">
+                <span>🍽️</span> Food & Cuisine
+              </button>
+              <button type="button" class="tab-btn" data-tab="budget">
+                <span>💰</span> Budget
+              </button>
+              <button type="button" class="tab-btn" data-tab="tips">
+                <span>💡</span> Tips & Checklist
+              </button>
+            </div>
+
+            <!-- Formatted Content Container -->
             <div id="itineraryContent" class="itinerary-content">
               <!-- Injected dynamically by app.js -->
             </div>

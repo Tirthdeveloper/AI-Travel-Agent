@@ -1,6 +1,6 @@
 /**
  * VoyageAI - Intelligent Travel Planner
- * Modern Vanilla JavaScript Frontend Controller
+ * Enhanced Frontend Controller with Flight Radar, Confetti Celebration & Tab System
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,29 +20,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const hotelSelect = document.getElementById('hotelSelect');
   const interestChips = document.querySelectorAll('.interest-chip');
   const customNotes = document.getElementById('customNotes');
+  
+  // Submit Button
   const submitBtn = document.getElementById('submitBtn');
+  const submitBtnIcon = document.getElementById('submitBtnIcon');
+  const submitBtnText = document.getElementById('submitBtnText');
 
-  // Hub & Display Elements
+  // Hub & Display Panels
   const destinationsGrid = document.getElementById('destinationsGrid');
   const emptyState = document.getElementById('emptyState');
   const loadingState = document.getElementById('loadingState');
   const resultState = document.getElementById('resultState');
   const errorState = document.getElementById('errorState');
+  
+  // Radar & Loading Elements
+  const radarPercent = document.getElementById('radarPercent');
+  const flightTrackFill = document.getElementById('flightTrackFill');
+  const flightPlaneIcon = document.getElementById('flightPlaneIcon');
+  const flightDestWaypoint = document.getElementById('flightDestWaypoint');
   const loadingStatusText = document.getElementById('loadingStatusText');
   const loadingProgressBar = document.getElementById('loadingProgressBar');
-  const itineraryContent = document.getElementById('itineraryContent');
-  const errorMessageText = document.getElementById('errorMessageText');
-  const retryBtn = document.getElementById('retryBtn');
+  const liveFactText = document.getElementById('liveFactText');
 
-  // Action Buttons & Badges
+  // Showcase Header & Badges
+  const showcaseDestTitle = document.getElementById('showcaseDestTitle');
   const metaDestBadge = document.getElementById('metaDestBadge');
   const metaDurationBadge = document.getElementById('metaDurationBadge');
   const metaTravelersBadge = document.getElementById('metaTravelersBadge');
   const metaBudgetBadge = document.getElementById('metaBudgetBadge');
+  const metaTransportBadge = document.getElementById('metaTransportBadge');
+  const metaHotelBadge = document.getElementById('metaHotelBadge');
+  const mapsBtn = document.getElementById('mapsBtn');
+  const confettiCanvas = document.getElementById('confettiCanvas');
+
+  // Tabs & Content
+  const itineraryTabsBar = document.getElementById('itineraryTabsBar');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const itineraryContent = document.getElementById('itineraryContent');
+
+  // Action Buttons
   const copyBtn = document.getElementById('copyBtn');
   const downloadBtn = document.getElementById('downloadBtn');
   const printBtn = document.getElementById('printBtn');
   const planAnotherBtn = document.getElementById('planAnotherBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const errorMessageText = document.getElementById('errorMessageText');
 
   // Theme & Toast
   const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -52,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentRawMarkdown = '';
   let currentDestinationName = 'Trip';
+  let parsedSections = {};
 
   // --- Theme Controller ---
   const savedTheme = localStorage.getItem('voyageai-theme') || 'dark';
@@ -65,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`Switched to ${newTheme} theme`, newTheme === 'dark' ? '🌙' : '☀️');
   });
 
-  // --- Toast Utility ---
+  // --- Toast Notification ---
   let toastTimer = null;
   function showToast(message, icon = '✓', duration = 3200) {
     if (toastTimer) clearTimeout(toastTimer);
@@ -208,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
     durationSlider.value = item.bestDays;
     updateDurationDisplay(item.bestDays);
 
-    // Budget selection
     budgetCards.forEach(c => {
       const radio = c.querySelector('input[type="radio"]');
       if (radio && radio.value.toLowerCase() === item.budget.toLowerCase()) {
@@ -219,11 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Transport & Hotel
     if (item.transport) transportSelect.value = item.transport;
     if (item.hotel) hotelSelect.value = item.hotel;
 
-    // Interests
     if (item.interests && item.interests.length) {
       interestChips.forEach(chip => {
         const val = chip.getAttribute('data-interest');
@@ -235,20 +255,196 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    showToast(`Loaded ${item.name} plan template!`, item.emoji);
+    showToast(`Loaded ${item.name} preset!`, item.emoji);
     destinationInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  // --- Lightweight & Robust Markdown Parser ---
-  function parseMarkdownToHTML(md) {
-    if (!md) return '';
+  // --- Dynamic Live Ticker & Radar Simulation ---
+  let progressTimer = null;
+  let factTimer = null;
+  let currentProgress = 0;
 
-    // Normalize line breaks
+  const travelFacts = [
+    "Consulting Groq LLM & searching real-time Google Serper intelligence...",
+    "Scanning local attraction tickets, metro maps, and hidden scenic spots...",
+    "Curating authentic local cuisine and verified traveler recommendations...",
+    "Calculating realistic day-by-day budget estimates and transit options...",
+    "Structuring morning, afternoon, and evening schedules with optimal walking routes...",
+    "Polishing insider safety advice and seasonal packing tips..."
+  ];
+
+  function startRadarProgress(destination) {
+    currentProgress = 5;
+    flightDestWaypoint.textContent = destination || 'Destination';
+    radarPercent.textContent = '5%';
+    flightTrackFill.style.width = '5%';
+    flightPlaneIcon.style.left = '5%';
+    loadingProgressBar.style.width = '5%';
+
+    // Step indicators
+    const steps = [
+      { id: 'step1', min: 0, text: 'Connecting to Groq AI & Google Serper' },
+      { id: 'step2', min: 25, text: 'Gathering weather, transit passes & top rated attractions' },
+      { id: 'step3', min: 55, text: 'Assembling Morning, Afternoon & Evening schedules' },
+      { id: 'step4', min: 80, text: 'Finalizing hotel recommendations & budget breakdown' }
+    ];
+
+    // Facts rotation
+    let factIdx = 0;
+    liveFactText.textContent = travelFacts[0];
+    factTimer = setInterval(() => {
+      factIdx = (factIdx + 1) % travelFacts.length;
+      liveFactText.textContent = travelFacts[factIdx];
+    }, 2800);
+
+    // Smooth Progress easing
+    progressTimer = setInterval(() => {
+      if (currentProgress < 94) {
+        // Increment smoothly
+        const delta = Math.max(1, Math.floor((95 - currentProgress) * 0.08));
+        currentProgress += delta;
+        
+        radarPercent.textContent = `${currentProgress}%`;
+        flightTrackFill.style.width = `${currentProgress}%`;
+        flightPlaneIcon.style.left = `${currentProgress}%`;
+        loadingProgressBar.style.width = `${currentProgress}%`;
+
+        // Update step items
+        steps.forEach((s, idx) => {
+          const el = document.getElementById(s.id);
+          if (!el) return;
+          if (currentProgress >= s.min + 20) {
+            el.className = 'step-item completed';
+          } else if (currentProgress >= s.min) {
+            el.className = 'step-item active';
+            loadingStatusText.textContent = s.text;
+          } else {
+            el.className = 'step-item';
+          }
+        });
+      }
+    }, 400);
+  }
+
+  function finishRadarProgress() {
+    if (progressTimer) clearInterval(progressTimer);
+    if (factTimer) clearInterval(factTimer);
+    currentProgress = 100;
+    radarPercent.textContent = '100%';
+    flightTrackFill.style.width = '100%';
+    flightPlaneIcon.style.left = '100%';
+    loadingProgressBar.style.width = '100%';
+  }
+
+  // --- Confetti Celebration Burst ---
+  function fireConfetti() {
+    if (!confettiCanvas) return;
+    const ctx = confettiCanvas.getContext('2d');
+    const width = confettiCanvas.width = confettiCanvas.parentElement.offsetWidth;
+    const height = confettiCanvas.height = confettiCanvas.parentElement.offsetHeight;
+
+    const colors = ['#38bdf8', '#0284c7', '#f59e0b', '#22c55e', '#a855f7', '#fb7185'];
+    const particles = [];
+
+    for (let i = 0; i < 70; i++) {
+      particles.push({
+        x: width * (0.3 + Math.random() * 0.4),
+        y: height * 0.2,
+        r: 3 + Math.random() * 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 8,
+        vy: -3 - Math.random() * 6,
+        gravity: 0.18 + Math.random() * 0.1,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 8,
+        opacity: 1
+      });
+    }
+
+    let animationId;
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+      let alive = false;
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.rotation += p.rotationSpeed;
+        p.opacity -= 0.012;
+
+        if (p.opacity > 0) {
+          alive = true;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(0, p.opacity);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.r, -p.r, p.r * 2, p.r * 1.5);
+          ctx.restore();
+        }
+      });
+
+      if (alive) {
+        animationId = requestAnimationFrame(render);
+      } else {
+        ctx.clearRect(0, 0, width, height);
+        cancelAnimationFrame(animationId);
+      }
+    }
+    render();
+  }
+
+  // --- Markdown Parser with Section Extraction for Tabs ---
+  function parseMarkdown(md) {
+    if (!md) return { all: '', daily: '', hotels: '', food: '', budget: '', tips: '' };
+
     let text = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-    // Headers
-    // Detect Day headers e.g. "### Day 1: [Theme]" and transform them into day cards
     const lines = text.split('\n');
+
+    let currentSection = 'overview';
+    let sections = {
+      overview: [],
+      daily: [],
+      hotels: [],
+      transit: [],
+      food: [],
+      budget: [],
+      tips: []
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const lower = line.toLowerCase();
+
+      if (lower.includes('day-by-day') || lower.includes('day by day')) {
+        currentSection = 'daily';
+      } else if (lower.includes('accommodation') || lower.includes('hotel')) {
+        currentSection = 'hotels';
+      } else if (lower.includes('transit') || lower.includes('getting around')) {
+        currentSection = 'transit';
+      } else if (lower.includes('culinary') || lower.includes('food') || lower.includes('must-eat')) {
+        currentSection = 'food';
+      } else if (lower.includes('budget') || lower.includes('cost')) {
+        currentSection = 'budget';
+      } else if (lower.includes('tip') || lower.includes('safety') || lower.includes('packing')) {
+        currentSection = 'tips';
+      }
+
+      sections[currentSection].push(line);
+    }
+
+    return {
+      all: renderLinesToHTML(lines),
+      daily: renderLinesToHTML(sections.daily),
+      hotels: renderLinesToHTML(sections.hotels),
+      food: renderLinesToHTML(sections.food),
+      budget: renderLinesToHTML(sections.budget),
+      tips: renderLinesToHTML(sections.tips, true) // Enable checklist mode for tips
+    };
+  }
+
+  function renderLinesToHTML(lines, isChecklist = false) {
     let outputLines = [];
     let insideDayCard = false;
     let insideTable = false;
@@ -257,25 +453,20 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i].trim();
 
-      // Check for Table rows
+      // Tables
       if (line.startsWith('|') && line.endsWith('|')) {
         if (!insideTable) {
           insideTable = true;
           tableHtml = ['<table><tbody>'];
         }
-
         const cells = line.split('|').map(c => c.trim()).slice(1, -1);
-        // Check if it's separator row like |---|---|
         if (cells.every(c => /^[-:]+$/.test(c))) {
-          // Turn first row into header
           if (tableHtml.length === 2) {
             tableHtml[1] = tableHtml[1].replace(/<td/g, '<th').replace(/<\/td>/g, '</th>');
           }
           continue;
         }
-
-        const rowHtml = '<tr>' + cells.map(c => `<td>${parseInlineMarkdown(c)}</td>`).join('') + '</tr>';
-        tableHtml.push(rowHtml);
+        tableHtml.push('<tr>' + cells.map(c => `<td>${parseInlineMarkdown(c)}</td>`).join('') + '</tr>');
         continue;
       } else if (insideTable) {
         insideTable = false;
@@ -284,24 +475,21 @@ document.addEventListener('DOMContentLoaded', () => {
         tableHtml = [];
       }
 
-      // Day section detection
+      // Day section cards
       if (line.match(/^###\s+(Day\s+\d+.*)/i)) {
-        if (insideDayCard) {
-          outputLines.push('</div>'); // Close previous day card
-        }
+        if (insideDayCard) outputLines.push('</div>');
         insideDayCard = true;
         const dayTitle = line.replace(/^###\s+/, '');
         outputLines.push(`<div class="day-plan-card"><h3 class="day-card-title">📅 ${parseInlineMarkdown(dayTitle)}</h3>`);
         continue;
       }
 
-      // Close day card if encountering a new main section
       if (insideDayCard && line.startsWith('## ')) {
         insideDayCard = false;
         outputLines.push('</div>');
       }
 
-      // Other headers
+      // Formatting
       if (line.startsWith('# ')) {
         outputLines.push(`<h1>${parseInlineMarkdown(line.substring(2))}</h1>`);
       } else if (line.startsWith('## ')) {
@@ -311,9 +499,29 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (line.startsWith('#### ')) {
         outputLines.push(`<h4>${parseInlineMarkdown(line.substring(5))}</h4>`);
       } else if (line.startsWith('- ') || line.startsWith('* ')) {
-        outputLines.push(`<li>${parseInlineMarkdown(line.substring(2))}</li>`);
+        const itemContent = line.substring(2);
+        if (isChecklist) {
+          outputLines.push(`
+            <label class="checklist-item">
+              <input type="checkbox">
+              <span>${parseInlineMarkdown(itemContent)}</span>
+            </label>
+          `);
+        } else {
+          outputLines.push(`<li>${parseDayTimeBadges(parseInlineMarkdown(itemContent))}</li>`);
+        }
       } else if (line.match(/^\d+\.\s+/)) {
-        outputLines.push(`<li>${parseInlineMarkdown(line.replace(/^\d+\.\s+/, ''))}</li>`);
+        const itemContent = line.replace(/^\d+\.\s+/, '');
+        if (isChecklist) {
+          outputLines.push(`
+            <label class="checklist-item">
+              <input type="checkbox">
+              <span>${parseInlineMarkdown(itemContent)}</span>
+            </label>
+          `);
+        } else {
+          outputLines.push(`<li>${parseDayTimeBadges(parseInlineMarkdown(itemContent))}</li>`);
+        }
       } else if (line === '') {
         outputLines.push('');
       } else {
@@ -321,88 +529,67 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    if (insideDayCard) {
-      outputLines.push('</div>');
-    }
+    if (insideDayCard) outputLines.push('</div>');
     if (insideTable) {
       tableHtml.push('</tbody></table>');
       outputLines.push(tableHtml.join(''));
     }
 
-    // Wrap adjacent <li> in <ul>
     let result = outputLines.join('\n');
     result = result.replace(/(<li>.*?<\/li>\s*)+/gs, (match) => `<ul>${match}</ul>`);
-
     return result;
   }
 
   function parseInlineMarkdown(str) {
     return str
-      // Bold + Italic
       .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      // Bold
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italic
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Inline code
       .replace(/`([^`]+)`/g, '<code>$1</code>');
   }
 
-  // --- Step Simulation for Loading State ---
-  let stepInterval = null;
-  function startLoadingSteps() {
-    const steps = [
-      { id: 'step1', text: 'Connecting to Groq AI Planner...', progress: 25 },
-      { id: 'step2', text: 'Searching attractions with Google Serper...', progress: 50 },
-      { id: 'step3', text: 'Structuring day-by-day morning, afternoon & evening schedule...', progress: 75 },
-      { id: 'step4', text: 'Finalizing transit options, hotel picks & budget calculation...', progress: 90 },
-    ];
+  function parseDayTimeBadges(html) {
+    return html
+      .replace(/<strong>Morning:?<\/strong>/gi, '<span class="time-tag time-morning">🌅 Morning</span>')
+      .replace(/<strong>Afternoon:?<\/strong>/gi, '<span class="time-tag time-afternoon">☀️ Afternoon</span>')
+      .replace(/<strong>Evening:?<\/strong>/gi, '<span class="time-tag time-evening">🌙 Evening</span>')
+      .replace(/<strong>Dining Recommendations:?<\/strong>/gi, '<span class="time-tag time-dining">🍴 Dining</span>')
+      .replace(/<strong>Dining:?<\/strong>/gi, '<span class="time-tag time-dining">🍴 Dining</span>');
+  }
 
-    let currentStep = 0;
-    loadingProgressBar.style.width = '15%';
+  // --- Tab Switcher Logic ---
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-    // Reset steps
-    steps.forEach(s => {
-      const el = document.getElementById(s.id);
-      if (el) {
-        el.className = 'step-item';
+      const tabKey = btn.getAttribute('data-tab');
+      if (parsedSections[tabKey]) {
+        itineraryContent.innerHTML = parsedSections[tabKey];
+        bindChecklistEvents();
+      } else if (parsedSections.all) {
+        itineraryContent.innerHTML = parsedSections.all;
+        bindChecklistEvents();
       }
     });
+  });
 
-    const activateStep = (idx) => {
-      steps.forEach((s, i) => {
-        const el = document.getElementById(s.id);
-        if (!el) return;
-        if (i < idx) {
-          el.className = 'step-item completed';
-        } else if (i === idx) {
-          el.className = 'step-item active';
-          loadingStatusText.textContent = s.text;
-          loadingProgressBar.style.width = `${s.progress}%`;
-        } else {
-          el.className = 'step-item';
-        }
-      });
-    };
-
-    activateStep(0);
-
-    stepInterval = setInterval(() => {
-      currentStep++;
-      if (currentStep < steps.length) {
-        activateStep(currentStep);
-      } else {
-        clearInterval(stepInterval);
+  function bindChecklistEvents() {
+    document.querySelectorAll('.checklist-item').forEach(item => {
+      const checkbox = item.querySelector('input[type="checkbox"]');
+      if (checkbox) {
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            item.classList.add('checked');
+          } else {
+            item.classList.remove('checked');
+          }
+        });
       }
-    }, 3800);
+    });
   }
 
-  function stopLoadingSteps() {
-    if (stepInterval) clearInterval(stepInterval);
-    loadingProgressBar.style.width = '100%';
-  }
-
-  // --- Form Submission Handling ---
+  // --- Form Submission Handling (Enhanced UX) ---
   travelForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -422,15 +609,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const interests = getSelectedInterests();
     const notes = customNotes.value.trim();
 
-    // Set UI to loading
+    // 1. Upgrade Submit Button to Active Loading
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtnIcon.textContent = '✈️';
+    submitBtnIcon.classList.add('spin-plane-icon');
+    submitBtnText.textContent = `Architecting ${dest} Itinerary...`;
+
+    // 2. Switch Right Panel to Flight Radar Loading
     emptyState.style.display = 'none';
     resultState.style.display = 'none';
     errorState.style.display = 'none';
     loadingState.style.display = 'flex';
-    submitBtn.disabled = true;
-    startLoadingSteps();
 
-    // Smooth scroll to results
+    // Start Radar & Live Ticker
+    startRadarProgress(dest);
+
+    // Smooth scroll directly to the radar card
     loadingState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     try {
@@ -451,8 +646,6 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
 
-      stopLoadingSteps();
-
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.detail || 'Failed to generate itinerary');
@@ -462,31 +655,58 @@ document.addEventListener('DOMContentLoaded', () => {
       currentRawMarkdown = data.itinerary;
       currentDestinationName = data.destination;
 
-      // Update header summary badges
+      // 3. Complete Radar Progress
+      finishRadarProgress();
+
+      // 4. Populate Showcase Header & Badges
+      showcaseDestTitle.textContent = `${data.days}-Day Journey to ${data.destination}`;
       metaDestBadge.textContent = `📍 ${data.destination}`;
       metaDurationBadge.textContent = `⏱️ ${data.days} Days`;
       metaTravelersBadge.textContent = `👥 ${data.travelers} Travelers`;
       metaBudgetBadge.textContent = `💎 ${data.budget}`;
+      metaTransportBadge.textContent = `🚀 ${data.transport}`;
+      metaHotelBadge.textContent = `🏨 ${data.hotel}`;
 
-      // Render Markdown into UI
-      itineraryContent.innerHTML = parseMarkdownToHTML(data.itinerary);
+      // Google Maps Direct Link
+      mapsBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.destination)}`;
 
+      // 5. Parse Sections for Tab System
+      parsedSections = parseMarkdown(data.itinerary);
+      itineraryContent.innerHTML = parsedSections.all;
+      bindChecklistEvents();
+
+      // Reset Tab to 'Complete Plan'
+      tabBtns.forEach(b => b.classList.remove('active'));
+      const allTab = document.querySelector('.tab-btn[data-tab="all"]');
+      if (allTab) allTab.classList.add('active');
+
+      // 6. Reveal with Celebration
       loadingState.style.display = 'none';
       resultState.style.display = 'block';
-      showToast('Your custom itinerary is ready!', '🎉');
 
-      // Scroll to view
+      // Confetti & Toast
+      fireConfetti();
+      showToast(`Your dream trip to ${data.destination} is ready!`, '🎉', 4000);
+
+      // Smooth scroll to top of itinerary
       resultState.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     } catch (err) {
-      stopLoadingSteps();
+      if (progressTimer) clearInterval(progressTimer);
+      if (factTimer) clearInterval(factTimer);
       console.error(err);
+
       loadingState.style.display = 'none';
-      errorMessageText.textContent = err.message || 'An error occurred while connecting to the AI agent.';
+      errorMessageText.textContent = err.message || 'An error occurred while communicating with the AI concierge.';
       errorState.style.display = 'flex';
       showToast('Generation failed. Please try again.', '❌');
     } finally {
+      // Restore Submit Button
       submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+      submitBtnIcon.textContent = '🚀';
+      submitBtnIcon.classList.remove('spin-plane-icon');
+      submitBtnText.textContent = 'Generate AI Travel Plan';
     }
   });
 
@@ -495,48 +715,44 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Quick Action Handlers ---
-  // 1. Copy Markdown
   copyBtn.addEventListener('click', async () => {
     if (!currentRawMarkdown) return;
     try {
       await navigator.clipboard.writeText(currentRawMarkdown);
-      showToast('Itinerary copied to clipboard!', '📋');
+      showToast('Itinerary markdown copied to clipboard!', '📋');
     } catch {
       showToast('Unable to copy to clipboard', '⚠️');
     }
   });
 
-  // 2. Download .md File
   downloadBtn.addEventListener('click', () => {
     if (!currentRawMarkdown) return;
     const blob = new Blob([currentRawMarkdown], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const safeName = currentDestinationName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    a.href = url;
     a.download = `${safeName}_itinerary.md`;
+    a.href = url;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Downloaded markdown file!', '💾');
+    showToast('Saved markdown file!', '💾');
   });
 
-  // 3. Print / PDF
   printBtn.addEventListener('click', () => {
     window.print();
   });
 
-  // 4. Plan Another Trip
   planAnotherBtn.addEventListener('click', () => {
     destinationInput.value = '';
     updateClearBtnVisibility();
     destinationInput.focus();
     destinationInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    showToast('Enter your next destination!', '✈️');
+    showToast('Ready for your next destination!', '✈️');
   });
 
-  // Initial loads
+  // Initialize
   updateDurationDisplay(durationSlider.value);
   updateTravelerType(parseInt(travelersInput.value, 10) || 2);
   loadPopularDestinations();
