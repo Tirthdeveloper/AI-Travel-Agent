@@ -1,69 +1,15 @@
-langchain
-langchain-openai
+# Core Web API & Server
+fastapi
+uvicorn[standard]
 python-dotenv
-langchain-google-genai
-langchain-anthropic
-# streamlit (removed in favor of Vanilla HTML/CSS/JS frontend)
-langchain-ollama
+pydantic
+
+# AI Agent & Orchestration
+langchain
 langchain-groq
 langchain-community
 langgraph
-pypdf
-beautifulsoup4
-wikipedia
-langchain-text-splitters
-langchain-chroma
-pydantic
-# Data Processing
-pandas
-numpy
 
-# Visualization
-matplotlib
-seaborn
-plotly
-
-# Machine Learning
-scikit-learn
-xgboost
-lightgbm
-joblib
-
-# Explainable AI
-shap
-
-# API / HTTP
+# Search & Utilities
 requests
 httpx
-
-# GIS / Maps
-folium
-# streamlit-folium (removed)
-geopandas
-shapely
-pyproj
-rasterio
-fiona
-
-# Satellite / Remote Sensing
-earthengine-api
-
-# Computer Vision
-opencv-python
-pillow
-ultralytics
-
-# Deep Learning
-torch
-torchvision
-
-# Backend API
-fastapi
-uvicorn
-
-# Database
-sqlalchemy
-psycopg2-binary
-
-# RAG / Document Processing
-langchain-chroma
