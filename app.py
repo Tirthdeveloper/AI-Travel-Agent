@@ -43,6 +43,8 @@ class TravelPlanRequest(BaseModel):
 
 
 @app.get("/")
+@app.get("/api")
+@app.get("/api/index.py")
 async def root():
     """Serve the main frontend UI."""
     index_path = os.path.join(static_dir, "index.html")
@@ -52,6 +54,7 @@ async def root():
 
 
 @app.get("/api/health")
+@app.get("/health")
 async def health():
     return {
         "status": "ok",
@@ -62,6 +65,7 @@ async def health():
 
 
 @app.get("/api/destinations")
+@app.get("/destinations")
 async def get_popular_destinations():
     """Curated popular destinations with metadata for instant autofill."""
     return [
@@ -153,6 +157,7 @@ async def get_popular_destinations():
 
 
 @app.post("/api/plan")
+@app.post("/plan")
 async def plan_trip(request: TravelPlanRequest):
     """Generate a full travel itinerary using the AI Agent."""
     dest = request.destination.strip()
