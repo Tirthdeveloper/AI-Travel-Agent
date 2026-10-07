@@ -53,7 +53,12 @@ async def root():
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "VoyageAI Travel Agent"}
+    return {
+        "status": "ok",
+        "service": "VoyageAI Travel Agent",
+        "groq_configured": bool(os.getenv("GROQ_API_KEY")),
+        "serper_configured": bool(os.getenv("SERPER_API_KEY"))
+    }
 
 
 @app.get("/api/destinations")
@@ -183,9 +188,19 @@ async def plan_trip(request: TravelPlanRequest):
 
 
 if __name__ == "__main__":
+    import threading
+    import webbrowser
     import uvicorn
+
+    def open_browser():
+        try:
+            webbrowser.open("http://127.0.0.1:8000")
+        except Exception:
+            pass
+
     print("\n" + "=" * 60)
     print(" 🚀 VoyageAI Server starting at http://127.0.0.1:8000")
-    print(" Open your browser to http://127.0.0.1:8000 to use the Travel Agent UI")
+    print(" 🌐 Opening browser automatically at http://127.0.0.1:8000...")
     print("=" * 60 + "\n")
+    threading.Timer(1.5, open_browser).start()
     uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)

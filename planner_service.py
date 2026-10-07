@@ -26,8 +26,14 @@ model = ChatGroq(
     temperature=0.7,
 )
 
-# Search wrapper (Google Serper)
-search_tool = GoogleSerperAPIWrapper()
+# Search wrapper (Google Serper) - initialized conditionally for deployment safety
+tools = []
+if serper_api_key and serper_api_key.strip():
+    try:
+        search_tool = GoogleSerperAPIWrapper()
+        tools.append(search_tool.run)
+    except Exception as e:
+        print(f"⚠️ Serper search initialization warning: {e}")
 
 SYSTEM_PROMPT = """
 You are an expert, world-class AI Travel Planner and Concierge.
@@ -75,7 +81,7 @@ Ensure the formatting uses clean Markdown with bold labels, clear headers, and b
 
 agent = create_agent(
     model=model,
-    tools=[search_tool.run],
+    tools=tools,
     system_prompt=SYSTEM_PROMPT,
     checkpointer=MemorySaver()
 )

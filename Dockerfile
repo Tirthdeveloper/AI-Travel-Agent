@@ -14,7 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose default port
+ENV PORT=8000
 EXPOSE 8000
 
-# Start command
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start command (supports dynamic $PORT injection by Cloud Run, Render, Railway, etc.)
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}"]
