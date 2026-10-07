@@ -1,0 +1,13 @@
+.git
+.env
+.env.local
+*.env
+__pycache__
+*.pyc
+.venv
+venv
+.vscode
+.idea
+run_app.bat
+Dockerfile
+render.yaml
